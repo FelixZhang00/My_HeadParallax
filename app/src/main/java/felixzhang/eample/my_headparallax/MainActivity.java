@@ -1,21 +1,25 @@
 package felixzhang.eample.my_headparallax;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import felixzhang.eample.my_headparallax.view.ParallaxListView;
+
 
 public class MainActivity extends ActionBarActivity {
 
-    private ListView mListView;
+    private ParallaxListView mListView;
     private View mHeadView;     //listview的头部
     private MyAdapter mAdapter;
 
@@ -32,10 +36,24 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mListView = (ListView) findViewById(R.id.listview);
-        mHeadView=View.inflate(this,R.layout.head,null);            //异步解析xml中的布局
+        mListView = (ParallaxListView) findViewById(R.id.listview);
+        mHeadView = View.inflate(this, R.layout.head, null);            //异步解析xml中的布局
         mListView.addHeaderView(mHeadView);
 
+        mListView.setOverScrollMode(View.OVER_SCROLL_NEVER);        //设置滑到顶部和底部的效果
+        final ImageView parallaxImageView = (ImageView) mHeadView.findViewById(R.id.imageView);
+
+        //当从xml中加载完成后，才能知道imageview的长高
+        mHeadView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+
+            @SuppressLint("NewApi")
+            @Override
+            public void onGlobalLayout() {
+                mListView.setParallaxImageView(parallaxImageView);
+
+                mHeadView.getViewTreeObserver().removeOnGlobalLayoutListener(this);  //取消当前的观察者
+            }
+        });
 
         mAdapter = new MyAdapter(this, R.layout.list_item, lists);
         mListView.setAdapter(mAdapter);
